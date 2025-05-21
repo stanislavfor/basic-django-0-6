@@ -13,10 +13,8 @@
 </head>
 <body>
 <header>
-    <div class="logo">
-        <a href="{% url 'home' %}"><img src="{% static '/images/_shop-logo.png' %}" alt="shop-logo"></a>
-    </div>
     <nav>
+        <div class="logo"><a href="{% url 'home' %}"><img src="{% static '/images/_shop-logo.png' %}" alt="shop-logo"></a></div>
         <ul>
             <li><a class="link-white" href="{% url 'home' %}">Главная</a></li>
             <li><a class="link-white" href="{% url 'add_product' %}"><span class="red">Добавить продукт</span></a></li>
