@@ -24,7 +24,7 @@
 
 - Подготовить свой Django-проект:
    - Убедиться, что проект работает и открывается на локальном сервере (на локальном компьютере)
-   - В settings.py добавить 'pythonanywhere.com' в ALLOWED_HOSTS как, например, `ALLOWED_HOSTS = ['pythonanywhere.com']`.
+   - В settings.py добавить 'pythonanywhere.com' в ALLOWED_HOSTS как, например, `ALLOWED_HOSTS = ['your_login.pythonanywhere.com']`.
    - Создать файл requirements.txt с зависимостями (pip freeze > requirements.txt) 
      или выполнить команду для [библиотеки pigar](#pigar) 
 
@@ -35,13 +35,58 @@
    - Нажать "Upload a file" и загрузить:
       - Django-проект (всю папку проекта)
       - Файл requirements.txt
+или 
+     
+- Клонировать репозиторий с GitHub.
+    - Введите команду для клонирования репозитория:
+      ```bash
+      git clone https://github.com/stanislavfor/basic-django-0-6.git
+      ```
+    - Это создаст папку `basic-django-0-6` в домашнем каталоге на PythonAnywhere.
+
 
 - Создать виртуальное окружение (рекомендуется):
    - Открыть вкладку "Consoles" -> "Bash console"
+   - Перейти в папку проекта:
+   ```bash
+      cd basic-django-0-6
+   ```
    - Выполнить:
+    ```bash
+        mkvirtualenv myenv --python=/usr/bin/python3.10
+        workon myenv
+    ```
+
+- Проверить, установлен ли Django в виртуальном окружении, с помощью команды:
+
 ```bash
-     mkvirtualenv myenv --python=/usr/bin/python3.13.3
-     workon myenv
+  pip list
+```
+
+- Установить Django, если Django не установлен, установить его с помощью pip:
+
+```bash
+  pip install django
+```
+
+- Проверить установку Django. Эта команда должна вывести версию Django, если он установлен правильно:
+
+```bash
+  python -m django --version
+```
+- Проверить список установленных пакетов:
+```
+  pip list
+```
+
+- Установить библиотеку Pillow:
+ ```
+    python -m pip install Pillow
+ ```
+
+- Создать файл requirements.txt
+```bash
+  touch requirements.txt
 ```
 
 - Установить зависимости:
@@ -61,19 +106,22 @@
 - Настроить WSGI-файл:
    - В разделе "Code" нажать на ссылку WSGI configuration file
    - Удалить всё содержимое и заменить на:
-```   
+```  
+    import os
+    import sys
+    
+    # Add the project directory to the sys.path
+    path = '/home/stass/basic-django-0-6'
+    if path not in sys.path:
+        sys.path.append(path)
+    
+    # Set the DJANGO_SETTINGS_MODULE environment variable
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'shop_project.settings')
+    
+    from django.core.wsgi import get_wsgi_application
+    from django.contrib.staticfiles.handlers import StaticFilesHandler
+    application = StaticFilesHandler(get_wsgi_application())
 
-     import os
-     import sys
-
-     path = 'shop_project/shop' # Путь до папки проекта
-     if path not in sys.path:
-     sys.path.append(path)
-
-     os.environ['DJANGO_SETTINGS_MODULE'] = 'your_project.settings'
-
-     from django.core.wsgi import get_wsgi_application
-     application = get_wsgi_application()
 ```
    - Сохранить файл, нажав комбинацию **Ctrl+S** или кнопку Save.
 
@@ -91,26 +139,34 @@
 - Обновить настройки Django:
    - В settings.py изменить DATABASES на:
 ```    
-     DATABASES = {
-     'default': {
-     'ENGINE': 'django.db.backends.mysql',
-     'NAME': 'your_username$name_db',
-     'USER': 'your_username',
-     'PASSWORD': 'password_db',
-     'HOST': 'your_username.mysql.pythonanywhere-services.com',
-     'OPTIONS': {
-     'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-     },
-     }
-     }
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'shop_project', 'databases', 'db.sqlite3'),
+        }
+    }
 ```
 
 - Применить миграции:
    - В консоли Bash выполнить:
 ```bash
-     workon myenv  # если используется virtualenv
-     python manage.py migrate
+     workon myenv  # если используется virtualenv     
 ```
+
+- Перейдите в папку `shop_project`.
+    - В консоли Bash на PythonAnywhere перейти в папку `shop_project`:
+      ```bash
+        cd /home/ваш_логин/basic-django-0-6/shop_project
+      ```
+
+    - Примените миграции.
+        - Выполнить команду для применения миграций:
+          ```bash
+            python manage.py migrate
+          ```
+        - Это создаст все необходимые таблицы в базе данных `db.sqlite3`.
+        - Проверить, что файл `db.sqlite3` существует в папке `shop_project/databases/`.
+      
 
 ### 5. Завершение настройки
 
@@ -118,6 +174,17 @@
 ```bash
    python manage.py createsuperuser
 ```
+
+- Настроить файл `settings.py`.
+    - Проверить, что настройки статических файлов выглядят следующим образом:
+      ```
+          STATIC_URL = '/static/'
+          STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+      ```
+    - Заменить строку определения `BASE_DIR` на следующую:
+     ```
+        BASE_DIR = Path(__file__).resolve().parent.parent
+     ```
 
 - Собрать статические файлы:
 ```bash
@@ -131,7 +198,13 @@
    - На вкладке "Web" найти ссылку вида your_username.pythonanywhere.com
    - Перейти по возможной ссылке, где сайт должен быть доступен
 
-### 6. Дополнительные настройки (при необходимости)
+
+### 6. Запуск проекта на сервере
+
+Перейти по адресу интернета: https://stass.pythonanywhere.com/
+
+<br><br>
+### 7. Дополнительные настройки (при необходимости)
 
 - Настройка домена (но, для бесплатного аккаунта только поддомен pythonanywhere):
    - В разделе "Web" → "Domains" можно добавить свой домен для платных аккаунтов
@@ -143,7 +216,8 @@
    - На вкладке "Consoles" можно открыть SSH-консоль для управления сервером
 
 <br><br>
-**Для запуска проекта**:
+### Запуск проекта на localhost:8000
+
 - Скачать архив с проектом;
 - Перейти в директорию проекта 'shop_project';
 - Запустить команду ```python manage.py runserver```;
@@ -151,9 +225,8 @@
 - По окончанию работы с проектом, отключить комбинацией клавиш 'Ctrl+C'.
 
 <br><br>
-### Маршрутизация в браузере
+### Маршрутизация в браузере на localhost:8000
 
-<br><br>
 - Страница admin-панели http://localhost:8000/admin/
   <br><br>
 - Главная страница проекта http://127.0.0.1:8000/
